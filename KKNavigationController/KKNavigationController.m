@@ -12,7 +12,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <math.h>
 
-@interface KKNavigationController ()
+@interface KKNavigationController () <UIGestureRecognizerDelegate>
 {
     CGPoint startTouch;
     
@@ -24,6 +24,7 @@
 @property (nonatomic,retain) UIView *backgroundView;
 @property (nonatomic,retain) NSMutableArray *screenShotsList;
 
+@property (nonatomic,assign) BOOL allowDismiss;
 @property (nonatomic,assign) BOOL isMoving;
 
 @end
@@ -35,8 +36,9 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         
-        self.screenShotsList = [[NSMutableArray alloc]initWithCapacity:2];
+        self.screenShotsList = [NSMutableArray new];
         self.canDragBack = YES;
+        self.allowDismiss = NO;
         
     }
     return self;
@@ -63,6 +65,11 @@
                                                                                 action:@selector(paningGestureReceive:)];
     [recognizer delaysTouchesBegan];
     [self.view addGestureRecognizer:recognizer];
+    recognizer.delegate = self;
+}
+
+- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return self.canDragBack;
 }
 
 - (void)didReceiveMemoryWarning
@@ -73,9 +80,23 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
-    [self.screenShotsList addObject:[self capture]];
+    // 只有当viewControllers里面有元素，拍照才有意义
+    if (self.viewControllers.count > 0) {
+        [self.screenShotsList addObject:[self capture]];
+    }
     
     [super pushViewController:viewController animated:animated];
+}
+
+- (void)prepareForPresent:(UINavigationController *)nav
+{
+    // 不要重复拍照
+    if (self.screenShotsList.count == 0) {
+        [self.screenShotsList addObject:[self captureForPresent:nav]];
+    }
+    
+    // 表示还有上层navigationController，允许在栈底的viewController上右划dismiss
+    self.allowDismiss = YES;
 }
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated
@@ -91,6 +112,19 @@
 {
     UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, self.view.opaque, 0.0);
     [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return img;
+}
+
+// 给present用的函数，如果你想让通过present初始化的
+- (UIImage *)captureForPresent:(UINavigationController *)navigationController
+{
+    UIGraphicsBeginImageContextWithOptions(navigationController.view.bounds.size, navigationController.view.opaque, 0.0);
+    [navigationController.view.layer renderInContext:UIGraphicsGetCurrentContext()];
     
     UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
     
@@ -126,7 +160,7 @@
     }
  *
  */
-    [lastScreenShotView setFrame:CGRectMake(startBackViewX+y,
+    [lastScreenShotView setFrame:CGRectMake(0,
                                             0,
                                             kkBackViewWidth,
                                             lastScreenShotViewHeight)];
@@ -144,7 +178,7 @@
 
 - (void)paningGestureReceive:(UIPanGestureRecognizer *)recoginzer
 {
-    if (self.viewControllers.count <= 1 || !self.canDragBack) return;
+    if (self.screenShotsList.count <= 0 || !self.canDragBack) return;
     
     CGPoint touchPoint = [recoginzer locationInView:KEY_WINDOW];
     
@@ -189,8 +223,14 @@
             [UIView animateWithDuration:0.3 animations:^{
                 [self moveViewWithX:320];
             } completion:^(BOOL finished) {
+                if (self.allowDismiss && self.viewControllers.count == 1) {
+                    [self dismissModalViewControllerAnimated:NO];
+                } else if (self.viewControllers.count > 1) {
+                    [self popViewControllerAnimated:NO];
+                } else {
+                    NSLog(@"Fatal error");
+                }
                 
-                [self popViewControllerAnimated:NO];
                 CGRect frame = self.view.frame;
                 frame.origin.x = 0;
                 self.view.frame = frame;

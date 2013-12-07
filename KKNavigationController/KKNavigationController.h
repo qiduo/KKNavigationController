@@ -16,7 +16,7 @@
 #define iOS7  ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
 
 // 背景视图起始frame.x
-#define startX -200;
+#define startX 0;
 
 
 @interface KKNavigationController : UINavigationController
@@ -26,5 +26,7 @@
 
 // 默认为特效开启
 @property (nonatomic, assign) BOOL canDragBack;
+
+- (void)prepareForPresent:(UINavigationController *)nav;
 
 @end
