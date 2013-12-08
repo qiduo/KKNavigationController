@@ -18,6 +18,14 @@
 // 背景视图起始frame.x
 #define startX 0;
 
+// 主要给那些含有缩放功能的view使用，这些view实现委托
+// 在处于放大模式下，返回NO，以禁用右划返回
+@protocol kkNavigationSubviewDeleagte <NSObject>
+
+@optional
+- (BOOL)allowDragBack;
+
+@end
 
 @interface KKNavigationController : UINavigationController
 {

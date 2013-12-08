@@ -69,6 +69,25 @@
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    UIView* view = gestureRecognizer.view;
+    CGPoint loc = [gestureRecognizer locationInView:view];
+    UIView* subview = [view hitTest:loc withEvent:nil];
+    
+    if (subview) {
+        for (UIView *view = subview;view != nil; view = view.superview) {
+            if ([view conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
+                id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)view;
+                if ([delegate respondsToSelector:@selector(allowDragBack)]) {
+                    BOOL enabled = [delegate allowDragBack];
+                    if (!enabled) {
+                        return NO;
+                    }
+                }
+                
+                break;
+            }
+        }
+    }
     return self.canDragBack;
 }
 
