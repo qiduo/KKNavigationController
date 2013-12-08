@@ -31,6 +31,21 @@
 
 @implementation KKNavigationController
 
++ (BOOL)_iOS7WithSDK7 {
+    static BOOL indicator;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        indicator = NO;
+#if defined(__IPHONE_7_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0
+        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1) {
+            indicator = YES;
+        }
+#endif
+    });
+    
+    return indicator;
+}
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -69,6 +84,10 @@
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    if (!self.canDragBack) {
+        return NO;
+    }
+    
     UIView* view = gestureRecognizer.view;
     CGPoint loc = [gestureRecognizer locationInView:view];
     UIView* subview = [view hitTest:loc withEvent:nil];
@@ -88,7 +107,7 @@
             }
         }
     }
-    return self.canDragBack;
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning
@@ -165,10 +184,8 @@
 
     blackMask.alpha = alpha;
 
-    CGFloat aa = abs(startBackViewX)/kkBackViewWidth;
-    CGFloat y = x*aa;
-
     CGFloat lastScreenShotViewHeight = kkBackViewHeight;
+    CGFloat y = 0.f;
     
     //TODO: FIX self.edgesForExtendedLayout = UIRectEdgeNone  SHOW BUG
 /**
@@ -179,8 +196,14 @@
     }
  *
  */
+    if ([[self class] _iOS7WithSDK7]) {
+        
+    } else {
+        y += 20.f;
+        lastScreenShotViewHeight -= 20.f;
+    }
     [lastScreenShotView setFrame:CGRectMake(0,
-                                            0,
+                                            y,
                                             kkBackViewWidth,
                                             lastScreenShotViewHeight)];
 
