@@ -199,8 +199,12 @@
     if ([[self class] _iOS7WithSDK7]) {
         
     } else {
-        y += 20.f;
-        lastScreenShotViewHeight -= 20.f;
+        // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
+        // 并且也不需要考虑wantFullScreenLayout变量, lastScreenShotView定位是全屏幕的
+        UIImage *lastScreenShot = [self.screenShotsList lastObject];
+        
+        lastScreenShotViewHeight = lastScreenShot.size.height;
+        y = kkBackViewHeight - lastScreenShotViewHeight;
     }
     [lastScreenShotView setFrame:CGRectMake(0,
                                             y,
