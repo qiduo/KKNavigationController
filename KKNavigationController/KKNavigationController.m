@@ -83,7 +83,7 @@
     recognizer.delegate = self;
 }
 
-- (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if (!self.canDragBack) {
         return NO;
     }
@@ -99,6 +99,7 @@
                 if ([delegate respondsToSelector:@selector(allowDragBack)]) {
                     BOOL enabled = [delegate allowDragBack];
                     if (!enabled) {
+                        NSLog(@"!enabled");
                         return NO;
                     }
                 }
@@ -107,6 +108,11 @@
             }
         }
     }
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    // 这个事件可能会先于其它的GestureRecognizer执行。如果return NO， 很可能会屏蔽其它GestureRecoginzer
     return YES;
 }
 
