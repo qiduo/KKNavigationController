@@ -99,7 +99,6 @@
                 if ([delegate respondsToSelector:@selector(allowDragBack)]) {
                     BOOL enabled = [delegate allowDragBack];
                     if (!enabled) {
-                        NSLog(@"!enabled");
                         return NO;
                     }
                 }
@@ -125,6 +124,7 @@
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
     // 只有当viewControllers里面有元素，拍照才有意义
+    // 这样可以保证NavigationController初始化的时候，initWithRootViewController时不会无意义地拍照
     if (self.viewControllers.count > 0) {
         [self.screenShotsList addObject:[self capture]];
     }
@@ -206,7 +206,7 @@
         
     } else {
         // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
-        // 并且也不需要考虑wantFullScreenLayout变量, lastScreenShotView定位是全屏幕的
+        // 直接将照片贴着屏幕底边展示即可
         UIImage *lastScreenShot = [self.screenShotsList lastObject];
         
         lastScreenShotViewHeight = lastScreenShot.size.height;
@@ -230,7 +230,7 @@
 
 - (void)paningGestureReceive:(UIPanGestureRecognizer *)recoginzer
 {
-    if (self.screenShotsList.count <= 0 || !self.canDragBack) return;
+    if (self.screenShotsList.count <= 0) return;
     
     CGPoint touchPoint = [recoginzer locationInView:KEY_WINDOW];
     
