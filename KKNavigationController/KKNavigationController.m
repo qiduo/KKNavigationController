@@ -93,6 +93,7 @@
     UIView* subview = [view hitTest:loc withEvent:nil];
     
     if (subview) {
+        // 自底向上，检查view链中是否不允许卡片后退
         for (UIView *view = subview;view != nil; view = view.superview) {
             if ([view conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
                 id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)view;
@@ -104,6 +105,18 @@
                 }
                 
                 break;
+            }
+        }
+    }
+    
+    // 检查一下当前的viewController是否不允许卡片后退
+    UIViewController *viewController = [self.viewControllers lastObject];
+    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
+        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
+        if ([delegate respondsToSelector:@selector(allowDragBack)]) {
+            BOOL enabled = [delegate allowDragBack];
+            if (!enabled) {
+                return NO;
             }
         }
     }
@@ -276,8 +289,24 @@
                 [self moveViewWithX:320];
             } completion:^(BOOL finished) {
                 if (self.allowDismiss && self.viewControllers.count == 1) {
+                    UIViewController *viewController = [self.viewControllers lastObject];
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
+                        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
+                        if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
+                            [delegate procedureBeforeExit];
+                        }
+                    }
+                    
                     [self dismissModalViewControllerAnimated:NO];
                 } else if (self.viewControllers.count > 1) {
+                    UIViewController *viewController = [self.viewControllers lastObject];
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
+                        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
+                        if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
+                            [delegate procedureBeforeExit];
+                        }
+                    }
+                    
                     [self popViewControllerAnimated:NO];
                 } else {
                     NSLog(@"Fatal error");

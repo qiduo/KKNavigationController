@@ -24,6 +24,7 @@
 
 @optional
 - (BOOL)allowDragBack;
+- (void)procedureBeforeExit;
 
 @end
 
