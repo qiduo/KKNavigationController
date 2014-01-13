@@ -203,28 +203,14 @@
 
     blackMask.alpha = alpha;
 
-    CGFloat lastScreenShotViewHeight = kkBackViewHeight;
-    CGFloat y = 0.f;
+    // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
+    // 直接将照片贴着屏幕底边展示即可
+    UIImage *lastScreenShot = [self.screenShotsList lastObject];
     
-    //TODO: FIX self.edgesForExtendedLayout = UIRectEdgeNone  SHOW BUG
-/**
- *  if u use self.edgesForExtendedLayout = UIRectEdgeNone; pls add
+    CGFloat lastScreenShotViewHeight = lastScreenShot.size.height;
+    CGFloat superviewHeight = lastScreenShotView.superview.frame.size.height;
+    CGFloat y = superviewHeight - lastScreenShotViewHeight;
 
-    if (!iOS7) {
-        lastScreenShotViewHeight = lastScreenShotViewHeight - 20;
-    }
- *
- */
-    if ([[self class] _iOS7WithSDK7]) {
-        
-    } else {
-        // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
-        // 直接将照片贴着屏幕底边展示即可
-        UIImage *lastScreenShot = [self.screenShotsList lastObject];
-        
-        lastScreenShotViewHeight = lastScreenShot.size.height;
-        y = kkBackViewHeight - lastScreenShotViewHeight;
-    }
     [lastScreenShotView setFrame:CGRectMake(0,
                                             y,
                                             kkBackViewWidth,
