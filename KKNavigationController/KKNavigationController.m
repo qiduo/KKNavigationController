@@ -84,6 +84,14 @@
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.numberOfTouches > 0) {
+        UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)gestureRecognizer;
+        CGPoint translation = [pan velocityInView:pan.view];
+        if (fabs(translation.y) > fabs(translation.x) / 2) {
+            return NO;
+        }
+    }
+    
     if (!self.canDragBack) {
         return NO;
     }
