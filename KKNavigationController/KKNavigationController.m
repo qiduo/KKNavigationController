@@ -88,6 +88,30 @@
         return NO;
     }
     
+    // 只有当前viewController实现了kkNavigationControllerEnabled函数，并且返回YES，才可能继续判断
+    UIViewController *viewController = [self.viewControllers lastObject];
+    if (![viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
+        return NO;
+    } else {
+        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
+        if (![delegate respondsToSelector:@selector(kkNavigationControllerEnabled)]) {
+            NSLog(@"@vim");
+            return NO;
+        } else {
+            BOOL enabled = [delegate kkNavigationControllerEnabled];
+            if (!enabled) {
+                return NO;
+            }
+        }
+        
+        if ([delegate respondsToSelector:@selector(allowDragBack)]) {
+            BOOL enabled = [delegate allowDragBack];
+            if (!enabled) {
+                return NO;
+            }
+        }
+    }
+    
     UIView* view = gestureRecognizer.view;
     CGPoint loc = [gestureRecognizer locationInView:view];
     UIView* subview = [view hitTest:loc withEvent:nil];
@@ -95,8 +119,8 @@
     if (subview) {
         // 自底向上，检查view链中是否不允许卡片后退
         for (UIView *view = subview;view != nil; view = view.superview) {
-            if ([view conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
-                id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)view;
+            if ([view conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
+                id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)view;
                 if ([delegate respondsToSelector:@selector(allowDragBack)]) {
                     BOOL enabled = [delegate allowDragBack];
                     if (!enabled) {
@@ -109,17 +133,7 @@
         }
     }
     
-    // 检查一下当前的viewController是否不允许卡片后退
-    UIViewController *viewController = [self.viewControllers lastObject];
-    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
-        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
-        if ([delegate respondsToSelector:@selector(allowDragBack)]) {
-            BOOL enabled = [delegate allowDragBack];
-            if (!enabled) {
-                return NO;
-            }
-        }
-    }
+    
     return YES;
 }
 
@@ -276,8 +290,8 @@
             } completion:^(BOOL finished) {
                 if (self.allowDismiss && self.viewControllers.count == 1) {
                     UIViewController *viewController = [self.viewControllers lastObject];
-                    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
-                        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
+                        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
                         if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
                             [delegate procedureBeforeExit];
                         }
@@ -286,8 +300,8 @@
                     [self dismissModalViewControllerAnimated:NO];
                 } else if (self.viewControllers.count > 1) {
                     UIViewController *viewController = [self.viewControllers lastObject];
-                    if ([viewController conformsToProtocol:@protocol(kkNavigationSubviewDeleagte)]) {
-                        id<kkNavigationSubviewDeleagte> delegate = (id<kkNavigationSubviewDeleagte>)viewController;
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
+                        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
                         if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
                             [delegate procedureBeforeExit];
                         }

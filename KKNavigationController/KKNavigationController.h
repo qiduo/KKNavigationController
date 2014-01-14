@@ -17,12 +17,21 @@
 // 背景视图起始frame.x
 #define startX 0;
 
-// 主要给那些含有缩放功能的view使用，这些view实现委托
-// 在处于放大模式下，返回NO，以禁用右划返回
-@protocol kkNavigationSubviewDeleagte <NSObject>
+
+@protocol kkNavigationDeleagte <NSObject>
 
 @optional
+// 对于每个viewController，如果它想在自己的页面上启用kkNavigationController的特性，必须显示地实现下面这个函数，并且返回YES
+// viewController可以自由控制本页面上是否启用，默认不启用（不实现也不启用)
+// only for viewController
+- (BOOL)kkNavigationControllerEnabled;
+
+// 这个函数粒度最细，在kkNavigationControllerEnabled的情况下，可以根据条件暂时性的关闭滑动后退
+// 例如含有缩放功能的view，它们可以在处于放大模式下，返回NO，以禁用右划返回
+// for viewController and view
 - (BOOL)allowDragBack;
+
+// 在返回前做一些清理工作
 - (void)procedureBeforeExit;
 
 @end
