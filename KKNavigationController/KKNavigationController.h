@@ -18,7 +18,7 @@
 #define startX 0;
 
 
-@protocol kkNavigationDeleagte <NSObject>
+@protocol kkNavigationDelegate <NSObject>
 
 @optional
 // 对于每个viewController，如果它想在自己的页面上启用kkNavigationController的特性，必须显示地实现下面这个函数，并且返回YES

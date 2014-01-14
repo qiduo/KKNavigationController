@@ -90,10 +90,10 @@
     
     // 只有当前viewController实现了kkNavigationControllerEnabled函数，并且返回YES，才可能继续判断
     UIViewController *viewController = [self.viewControllers lastObject];
-    if (![viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
+    if (![viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
         return NO;
     } else {
-        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
+        id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
         if (![delegate respondsToSelector:@selector(kkNavigationControllerEnabled)]) {
             NSLog(@"@vim");
             return NO;
@@ -119,8 +119,8 @@
     if (subview) {
         // 自底向上，检查view链中是否不允许卡片后退
         for (UIView *view = subview;view != nil; view = view.superview) {
-            if ([view conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
-                id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)view;
+            if ([view conformsToProtocol:@protocol(kkNavigationDelegate)]) {
+                id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)view;
                 if ([delegate respondsToSelector:@selector(allowDragBack)]) {
                     BOOL enabled = [delegate allowDragBack];
                     if (!enabled) {
@@ -290,8 +290,8 @@
             } completion:^(BOOL finished) {
                 if (self.allowDismiss && self.viewControllers.count == 1) {
                     UIViewController *viewController = [self.viewControllers lastObject];
-                    if ([viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
-                        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
+                        id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
                         if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
                             [delegate procedureBeforeExit];
                         }
@@ -300,8 +300,8 @@
                     [self dismissModalViewControllerAnimated:NO];
                 } else if (self.viewControllers.count > 1) {
                     UIViewController *viewController = [self.viewControllers lastObject];
-                    if ([viewController conformsToProtocol:@protocol(kkNavigationDeleagte)]) {
-                        id<kkNavigationDeleagte> delegate = (id<kkNavigationDeleagte>)viewController;
+                    if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
+                        id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
                         if ([delegate respondsToSelector:@selector(procedureBeforeExit)]) {
                             [delegate procedureBeforeExit];
                         }
