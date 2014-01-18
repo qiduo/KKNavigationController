@@ -27,6 +27,7 @@
 @property (nonatomic,assign) BOOL allowDismiss;
 @property (nonatomic,assign) BOOL isMoving;
 
+@property (nonatomic,assign) BOOL initFlag;
 @end
 
 @implementation KKNavigationController
@@ -54,6 +55,7 @@
         self.screenShotsList = [NSMutableArray new];
         self.canDragBack = YES;
         self.allowDismiss = NO;
+        self.initFlag = NO;
         
     }
     return self;
@@ -83,6 +85,25 @@
     recognizer.delegate = self;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    // 由于涉及到self.view.bounds，所以放在这个函数内
+    // 用initFlag来限制只执行一次
+    if (!self.initFlag) {
+        self.initFlag = YES;
+        
+        CALayer *shadowLayer = self.view.layer;
+        UIBezierPath* newShadowPath = [UIBezierPath bezierPathWithRect:self.view.bounds];
+        shadowLayer.masksToBounds = NO;
+        shadowLayer.shadowRadius = 2;
+        shadowLayer.shadowOpacity = 0.9;
+        shadowLayer.shadowColor = [[UIColor blackColor] CGColor];
+        shadowLayer.shadowOffset = CGSizeZero;
+        shadowLayer.shadowPath = [newShadowPath CGPath];
+    }
+}
+
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if (gestureRecognizer.numberOfTouches > 0) {
         UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)gestureRecognizer;
@@ -103,7 +124,6 @@
     } else {
         id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
         if (![delegate respondsToSelector:@selector(kkNavigationControllerEnabled)]) {
-            NSLog(@"@vim");
             return NO;
         } else {
             BOOL enabled = [delegate kkNavigationControllerEnabled];
