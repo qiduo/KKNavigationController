@@ -232,11 +232,13 @@
     CGFloat lastScreenShotViewHeight = lastScreenShot.size.height;
     CGFloat superviewHeight = lastScreenShotView.superview.frame.size.height;
     CGFloat y = superviewHeight - lastScreenShotViewHeight;
+    
+    CGFloat gapScale = 0.04 * (kkBackViewWidth - x) / kkBackViewWidth;
 
-    [lastScreenShotView setFrame:CGRectMake(0,
-                                            y,
-                                            kkBackViewWidth,
-                                            lastScreenShotViewHeight)];
+    [lastScreenShotView setFrame:CGRectMake(gapScale * kkBackViewWidth,
+                                            y + gapScale * lastScreenShotViewHeight,
+                                            (1 - 2 * gapScale) * kkBackViewWidth,
+                                            (1 - 2 * gapScale) * lastScreenShotViewHeight)];
 
 }
 
@@ -291,7 +293,7 @@
         
     }else if (recoginzer.state == UIGestureRecognizerStateEnded){
         
-        if (touchPoint.x - startTouch.x > 50)
+        if (touchPoint.x - startTouch.x > 80)
         {
             [UIView animateWithDuration:0.3 animations:^{
                 [self moveViewWithX:320];
