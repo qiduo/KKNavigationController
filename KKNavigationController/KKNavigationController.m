@@ -274,6 +274,7 @@
 - (void)paningGestureReceive:(UIPanGestureRecognizer *)recoginzer
 {
     if (self.screenShotsList.count <= 0) return;
+    UIViewController *currentViewController = [self.viewControllers lastObject];
     
     CGPoint touchPoint = [recoginzer locationInView:KEY_WINDOW];
     
@@ -311,6 +312,7 @@
 
         [self.backgroundView insertSubview:lastScreenShotView belowSubview:blackMask];
         
+        currentViewController.view.userInteractionEnabled = NO;
     }else if (recoginzer.state == UIGestureRecognizerStateEnded){
         
         if (touchPoint.x - startTouch.x > 80)
@@ -356,6 +358,7 @@
             } completion:^(BOOL finished) {
                 _isMoving = NO;
                 self.backgroundView.hidden = YES;
+                currentViewController.view.userInteractionEnabled = YES;
             }];
             
         }
