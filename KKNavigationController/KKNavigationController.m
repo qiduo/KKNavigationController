@@ -313,6 +313,8 @@
         [self.backgroundView insertSubview:lastScreenShotView belowSubview:blackMask];
         
         currentViewController.view.userInteractionEnabled = NO;
+        currentViewController.view.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+        currentViewController.view.layer.shouldRasterize = YES;
     }else if (recoginzer.state == UIGestureRecognizerStateEnded){
         
         if (touchPoint.x - startTouch.x > 80)
@@ -359,6 +361,7 @@
                 _isMoving = NO;
                 self.backgroundView.hidden = YES;
                 currentViewController.view.userInteractionEnabled = YES;
+                currentViewController.view.layer.shouldRasterize = NO;
             }];
             
         }
@@ -371,6 +374,7 @@
         } completion:^(BOOL finished) {
             _isMoving = NO;
             self.backgroundView.hidden = YES;
+            currentViewController.view.layer.shouldRasterize = NO;
         }];
         
         return;
