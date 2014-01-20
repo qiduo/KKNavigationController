@@ -96,8 +96,8 @@
         CALayer *shadowLayer = self.view.layer;
         UIBezierPath* newShadowPath = [UIBezierPath bezierPathWithRect:self.view.bounds];
         shadowLayer.masksToBounds = NO;
-        shadowLayer.shadowRadius = 2;
-        shadowLayer.shadowOpacity = 0.9;
+        shadowLayer.shadowRadius = 4;
+        shadowLayer.shadowOpacity = 0.3;
         shadowLayer.shadowColor = [[UIColor blackColor] CGColor];
         shadowLayer.shadowOffset = CGSizeZero;
         shadowLayer.shadowPath = [newShadowPath CGPath];
