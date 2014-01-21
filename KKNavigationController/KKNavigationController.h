@@ -34,6 +34,9 @@
 // 在返回前做一些清理工作
 - (void)procedureBeforeExit;
 
+// 可以控制后退时是否允许左右滑动,对于内部需要左右拖动的控件，需要在ViewController内实现这个函数并返回YES
+- (BOOL)enableSimultaneouslyWithGestureRecognizer;
+
 @end
 
 @interface KKNavigationController : UINavigationController

@@ -167,7 +167,15 @@
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     // 这个事件可能会先于其它的GestureRecognizer执行。如果return NO， 很可能会屏蔽其它GestureRecoginzer
-    return YES;
+    
+    UIViewController *viewController = [self.viewControllers lastObject];
+    if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
+        id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
+        if ([delegate respondsToSelector:@selector(enableSimultaneouslyWithGestureRecognizer)]) {
+            return [delegate enableSimultaneouslyWithGestureRecognizer];
+        }
+    }
+    return NO;
 }
 
 - (void)didReceiveMemoryWarning
