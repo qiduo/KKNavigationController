@@ -34,7 +34,8 @@
 // 在返回前做一些清理工作
 - (void)procedureBeforeExit;
 
-// 可以控制后退时是否允许左右滑动,对于内部需要左右拖动的控件，需要在ViewController内实现这个函数并返回YES
+// 用于解决手势冲突: 对于内部需要左右拖动的控件，需要在ViewController内实现这个函数并返回YES
+// 否则很可能出现吃事件的情况
 - (BOOL)enableSimultaneouslyWithGestureRecognizer;
 
 @end

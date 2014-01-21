@@ -168,14 +168,26 @@
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     // 这个事件可能会先于其它的GestureRecognizer执行。如果return NO， 很可能会屏蔽其它GestureRecoginzer
     
+    // 原因1：所以对于未启用卡片后退的ViewController，必须返回YES
+    if (!self.canDragBack) {
+        return YES;
+    }
+    
     UIViewController *viewController = [self.viewControllers lastObject];
     if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
         id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
-        if ([delegate respondsToSelector:@selector(enableSimultaneouslyWithGestureRecognizer)]) {
-            return [delegate enableSimultaneouslyWithGestureRecognizer];
+        if ([delegate respondsToSelector:@selector(kkNavigationControllerEnabled)] && [delegate kkNavigationControllerEnabled]) {
+            if ([delegate respondsToSelector:@selector(enableSimultaneouslyWithGestureRecognizer)]) {
+                // 显式启用卡片后退，并且实现了enableSimultaneouslyWithGestureRecognizer委托
+                return [delegate enableSimultaneouslyWithGestureRecognizer];
+            } else {
+                return NO;
+            }
         }
     }
-    return NO;
+    
+    // 未启用卡片后退
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning
