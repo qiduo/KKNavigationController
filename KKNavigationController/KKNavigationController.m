@@ -104,11 +104,25 @@
     }
 }
 
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    // 其它所有手势必须等我识别失败，才允许启用
+    // 这样就避免了卡片后退的途中，卡片内部还能上下滚动的问题
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
+}
+
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if (gestureRecognizer.numberOfTouches > 0) {
         UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)gestureRecognizer;
         CGPoint translation = [pan velocityInView:pan.view];
-        if (fabs(translation.y) > fabs(translation.x) / 2) {
+        
+        // 如果是向左滑动，或者y轴的分量过大，那么不启用效果
+        if (translation.x < 0 || fabs(translation.y) > fabs(translation.x) / 2) {
             return NO;
         }
     }
@@ -161,32 +175,6 @@
         }
     }
     
-    
-    return YES;
-}
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    // 这个事件可能会先于其它的GestureRecognizer执行。如果return NO， 很可能会屏蔽其它GestureRecoginzer
-    
-    // 原因1：所以对于未启用卡片后退的ViewController，必须返回YES
-    if (!self.canDragBack) {
-        return YES;
-    }
-    
-    UIViewController *viewController = [self.viewControllers lastObject];
-    if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]) {
-        id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)viewController;
-        if ([delegate respondsToSelector:@selector(kkNavigationControllerEnabled)] && [delegate kkNavigationControllerEnabled]) {
-            if ([delegate respondsToSelector:@selector(enableSimultaneouslyWithGestureRecognizer)]) {
-                // 显式启用卡片后退，并且实现了enableSimultaneouslyWithGestureRecognizer委托
-                return [delegate enableSimultaneouslyWithGestureRecognizer];
-            } else {
-                return NO;
-            }
-        }
-    }
-    
-    // 未启用卡片后退
     return YES;
 }
 
