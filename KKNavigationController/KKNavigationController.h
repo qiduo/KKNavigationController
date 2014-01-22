@@ -33,11 +33,6 @@
 
 // 在返回前做一些清理工作
 - (void)procedureBeforeExit;
-
-// 用于解决手势冲突: 对于内部需要左右拖动的控件，需要在ViewController内实现这个函数并返回YES
-// 否则很可能出现吃事件的情况
-- (BOOL)enableSimultaneouslyWithGestureRecognizer;
-
 @end
 
 @interface KKNavigationController : UINavigationController
