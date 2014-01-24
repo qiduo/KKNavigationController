@@ -164,10 +164,7 @@
             if ([view conformsToProtocol:@protocol(kkNavigationDelegate)]) {
                 id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)view;
                 if ([delegate respondsToSelector:@selector(allowDragBack)]) {
-                    BOOL enabled = [delegate allowDragBack];
-                    if (!enabled) {
-                        return NO;
-                    }
+                    return [delegate allowDragBack];
                 }
                 
                 break;
