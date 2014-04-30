@@ -106,11 +106,15 @@
 
 #pragma mark - UIGestureRecognizerDelegate
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    // 其它所有手势必须等我识别失败，才允许启用
-    // 这样就避免了卡片后退的途中，卡片内部还能上下滚动的问题
-    return YES;
-}
+//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+//    // 其它所有手势必须等我识别失败，才允许启用
+//    // 这样就避免了卡片后退的途中，卡片内部还能上下滚动的问题
+//    if ([otherGestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]) {
+//        return NO;
+//    }
+//    
+//    return YES;
+//}
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return YES;
