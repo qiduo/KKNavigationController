@@ -106,15 +106,19 @@
 
 #pragma mark - UIGestureRecognizerDelegate
 
-//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-//    // 其它所有手势必须等我识别失败，才允许启用
-//    // 这样就避免了卡片后退的途中，卡片内部还能上下滚动的问题
-//    if ([otherGestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]) {
-//        return NO;
-//    }
-//    
-//    return YES;
-//}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    // 其它滑动手势必须等kkNavigationController识别失败，才允许启用
+    // 这样就避免了卡片后退的途中，卡片内部还能上下滚动的问题
+    // 该函数只针对iOS 7+有效
+    
+    // 注意要判断手势的类型，不能所有手势都返回NO，否则会造成iOS7上不能拷贝内容的问题
+    
+    if ([otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return YES;
