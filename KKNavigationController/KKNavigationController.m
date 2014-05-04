@@ -194,7 +194,14 @@
     // 只有当viewControllers里面有元素，拍照才有意义
     // 这样可以保证NavigationController初始化的时候，initWithRootViewController时不会无意义地拍照
     if (self.viewControllers.count > 0) {
-        [self.screenShotsList addObject:[self capture]];
+        UIImage *capture = [self capture];
+        
+        // 有时会获得nil，为防止crash使用[NSNull null]放入数组
+        if (capture) {
+            [self.screenShotsList addObject:capture];
+        } else {
+            [self.screenShotsList addObject:[NSNull null]];
+        }
     }
     
     [super pushViewController:viewController animated:animated];
@@ -260,7 +267,10 @@
 
     // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
     // 直接将照片贴着屏幕底边展示即可
-    UIImage *lastScreenShot = [self.screenShotsList lastObject];
+    UIImage *lastScreenShot = nil;
+    if ([self.screenShotsList lastObject] != [NSNull null]) {
+        lastScreenShot = [self.screenShotsList lastObject];
+    }
     
     CGFloat lastScreenShotViewHeight = lastScreenShot.size.height;
     CGFloat superviewHeight = lastScreenShotView.superview.frame.size.height;
