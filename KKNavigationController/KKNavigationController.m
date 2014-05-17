@@ -202,7 +202,7 @@
         if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]
             && [viewController respondsToSelector:@selector(kkNavigationControllerEnabled)]
             && [viewController performSelector:@selector(kkNavigationControllerEnabled)]) {
-            capture = [self capture];
+            capture = [self _captureForNavigationController:self];
         } else {
             capture = nil;
         }
@@ -222,7 +222,7 @@
 {
     // 不要重复拍照
     if (self.screenShotsList.count == 0) {
-        [self.screenShotsList addObject:[self captureForPresent:nav]];
+        [self.screenShotsList addObject:[self _captureForNavigationController:nav]];
     }
     
     // 表示还有上层navigationController，允许在栈底的viewController上右划dismiss
@@ -238,20 +238,8 @@
 
 #pragma mark - Utility Methods -
 
-- (UIImage *)capture
-{
-    UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, self.view.opaque, 0.0);
-    [self.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    return img;
-}
-
 // 给present用的函数，如果你想让通过present初始化的
-- (UIImage *)captureForPresent:(UINavigationController *)navigationController
+- (UIImage *)_captureForNavigationController:(UINavigationController *)navigationController
 {
     UIView *view = navigationController.view;
     UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES, view.window.screen.scale);
