@@ -253,14 +253,20 @@
 // 给present用的函数，如果你想让通过present初始化的
 - (UIImage *)captureForPresent:(UINavigationController *)navigationController
 {
-    UIGraphicsBeginImageContextWithOptions(navigationController.view.bounds.size, navigationController.view.opaque, 0.0);
-    [navigationController.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIView *view = navigationController.view;
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES, view.window.screen.scale);
     
-    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
+    /* iOS 7 */
+    if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+    else /* iOS 5,6 */
+        [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage* ret = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
     
-    return img;
+    return ret;
 }
 
 - (void)moveViewWithX:(float)x
