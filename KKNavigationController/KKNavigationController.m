@@ -194,7 +194,18 @@
     // 只有当viewControllers里面有元素，拍照才有意义
     // 这样可以保证NavigationController初始化的时候，initWithRootViewController时不会无意义地拍照
     if (self.viewControllers.count > 0) {
-        UIImage *capture = [self capture];
+        // 性能优化：
+        // 如果压入的viewController不需要卡片后退，那么当前页面也不需要拍照了
+        // 压入一个NSNull节省性能开销
+        
+        UIImage *capture;
+        if ([viewController conformsToProtocol:@protocol(kkNavigationDelegate)]
+            && [viewController respondsToSelector:@selector(kkNavigationControllerEnabled)]
+            && [viewController performSelector:@selector(kkNavigationControllerEnabled)]) {
+            capture = [self capture];
+        } else {
+            capture = nil;
+        }
         
         // 有时会获得nil，为防止crash使用[NSNull null]放入数组
         if (capture) {
@@ -267,9 +278,12 @@
 
     // 有的时候拍出来的照片是含状态栏的，有的时候不含，没找到规律，不过无所谓
     // 直接将照片贴着屏幕底边展示即可
-    UIImage *lastScreenShot = nil;
-    if ([self.screenShotsList lastObject] != [NSNull null]) {
-        lastScreenShot = [self.screenShotsList lastObject];
+    id lastScreenShotObject = [self.screenShotsList lastObject];
+    UIImage *lastScreenShot;
+    if (lastScreenShotObject == [NSNull null]) {
+        lastScreenShot = nil;
+    } else {
+        lastScreenShot = lastScreenShotObject;
     }
     
     CGFloat lastScreenShotViewHeight = lastScreenShot.size.height;
@@ -322,8 +336,13 @@
         
         if (lastScreenShotView) [lastScreenShotView removeFromSuperview];
         
-       
-        UIImage *lastScreenShot = [self.screenShotsList lastObject];
+        id lastScreenShotObject = [self.screenShotsList lastObject];
+        UIImage *lastScreenShot;
+        if (lastScreenShotObject == [NSNull null]) {
+            lastScreenShot = nil;
+        } else {
+            lastScreenShot = lastScreenShotObject;
+        }
         
         lastScreenShotView = [[UIImageView alloc]initWithImage:lastScreenShot];
         
