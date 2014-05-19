@@ -242,7 +242,7 @@
 - (UIImage *)_captureForNavigationController:(UINavigationController *)navigationController
 {
     UIView *view = navigationController.view;
-    UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES, view.window.screen.scale);
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 1.f);
     
     /* iOS 7 */
     if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
