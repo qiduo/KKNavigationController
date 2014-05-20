@@ -244,38 +244,52 @@ CGImageRef UIGetScreenImage();
 - (UIImage *)_captureForNavigationController:(UINavigationController *)navigationController
 {
     UIImage *result = nil;
-    
     UIView *view = navigationController.view;
-    /* iOS 7 */
-    if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)]) {
-        UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 1.f);
-        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+    
+//    原来的方法，性能不好
+//    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 1.f);
+//    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+//    result = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+    
+    // 用于去除截屏上部的状态栏
+    CGFloat statusBarHeight;
+    if ([UIApplication sharedApplication].statusBarHidden) {
+        // 状态栏已经隐藏了，那么不需要去除
+        statusBarHeight = 0.f;
+    } else {
+        // 状态栏会在截屏中出现，需要去除
+        statusBarHeight = 40.f;
+    }
+    
+    // 使用Apple允许的私有函数，提高截屏性能
+    // @see http://www.tuaw.com/2009/12/15/apple-relents-and-is-now-allowing-uigetscreenimage-for-app-st/
+    CGImageRef cgScreen = UIGetScreenImage();
+    if (cgScreen) {
+        CGFloat width = CGImageGetWidth(cgScreen);
+        CGFloat height = CGImageGetHeight(cgScreen);
+        CGImageRef croppedCgScreen = CGImageCreateWithImageInRect(cgScreen, CGRectMake(0, statusBarHeight, width, height - statusBarHeight));
+        if (croppedCgScreen) {
+            result = [UIImage imageWithCGImage:croppedCgScreen scale:2.f orientation:UIImageOrientationUp];
+            CGImageRelease(croppedCgScreen);
+        }
+        CGImageRelease(cgScreen);
+    }
+    
+    // iOS7上把状态栏后面的部位填充
+    if (result && [[self class] _iOS7WithSDK7]) {
+        CGRect targetBounds = view.bounds;
+        UIGraphicsBeginImageContextWithOptions(targetBounds.size, NO, 2.f);
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        
+        UIColor *color = [UIColor colorWithWhite:231.f / 255.f alpha:1.f];
+        CGContextSetFillColorWithColor(context, [color CGColor]);
+        CGContextFillRect(context, CGRectMake(0, 0, targetBounds.size.width, statusBarHeight));
+        
+        [result drawInRect:CGRectMake(0, targetBounds.size.height - result.size.height, result.size.width, result.size.height)];
+        
         result = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-    } else { // iOS 5 && 6
-        // 用于去除截屏上部的状态栏
-        CGFloat statusBarHeight;
-        if ([UIApplication sharedApplication].statusBarHidden) {
-            // 状态栏已经隐藏了，那么不需要去除
-            statusBarHeight = 0.f;
-        } else {
-            // 状态栏会在截屏中出现，需要去除
-            statusBarHeight = 40.f;
-        }
-        
-        // 使用Apple允许的私有函数，提高截屏性能
-        // @see http://www.tuaw.com/2009/12/15/apple-relents-and-is-now-allowing-uigetscreenimage-for-app-st/
-        CGImageRef cgScreen = UIGetScreenImage();
-        if (cgScreen) {
-            CGFloat width = CGImageGetWidth(cgScreen);
-            CGFloat height = CGImageGetHeight(cgScreen);
-            CGImageRef croppedCgScreen = CGImageCreateWithImageInRect(cgScreen, CGRectMake(0, statusBarHeight, width, height - statusBarHeight));
-            if (croppedCgScreen) {
-                result = [UIImage imageWithCGImage:croppedCgScreen scale:2.f orientation:UIImageOrientationUp];
-                CGImageRelease(croppedCgScreen);
-            }
-            CGImageRelease(cgScreen);
-        }
     }
     
     return result;
