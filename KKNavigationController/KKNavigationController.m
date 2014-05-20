@@ -12,6 +12,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import <math.h>
 
+CGImageRef UIGetScreenImage();
+
 @interface KKNavigationController () <UIGestureRecognizerDelegate>
 {
     CGPoint startTouch;
@@ -241,20 +243,42 @@
 // 给present用的函数，如果你想让通过present初始化的
 - (UIImage *)_captureForNavigationController:(UINavigationController *)navigationController
 {
+    UIImage *result = nil;
+    
     UIView *view = navigationController.view;
-    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 1.f);
-    
     /* iOS 7 */
-    if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+    if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)]) {
+        UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 1.f);
         [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
-    else /* iOS 5,6 */
-        [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+        result = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    } else { // iOS 5 && 6
+        // 用于去除截屏上部的状态栏
+        CGFloat statusBarHeight;
+        if ([UIApplication sharedApplication].statusBarHidden) {
+            // 状态栏已经隐藏了，那么不需要去除
+            statusBarHeight = 0.f;
+        } else {
+            // 状态栏会在截屏中出现，需要去除
+            statusBarHeight = 40.f;
+        }
+        
+        // 使用Apple允许的私有函数，提高截屏性能
+        // @see http://www.tuaw.com/2009/12/15/apple-relents-and-is-now-allowing-uigetscreenimage-for-app-st/
+        CGImageRef cgScreen = UIGetScreenImage();
+        if (cgScreen) {
+            CGFloat width = CGImageGetWidth(cgScreen);
+            CGFloat height = CGImageGetHeight(cgScreen);
+            CGImageRef croppedCgScreen = CGImageCreateWithImageInRect(cgScreen, CGRectMake(0, statusBarHeight, width, height - statusBarHeight));
+            if (croppedCgScreen) {
+                result = [UIImage imageWithCGImage:croppedCgScreen scale:2.f orientation:UIImageOrientationUp];
+                CGImageRelease(croppedCgScreen);
+            }
+            CGImageRelease(cgScreen);
+        }
+    }
     
-    UIImage* ret = UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    return ret;
+    return result;
 }
 
 - (void)moveViewWithX:(float)x
