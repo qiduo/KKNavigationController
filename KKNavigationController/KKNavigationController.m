@@ -23,7 +23,10 @@ CGImageRef UIGetScreenImage();
 
 }
 
+@property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
+
 @property (nonatomic,retain) UIView *backgroundView;
+@property (nonatomic, weak) UIView *fakeTopView;
 @property (nonatomic,retain) NSMutableArray *screenShotsList;
 
 @property (nonatomic,assign) BOOL allowDismiss;
@@ -85,6 +88,8 @@ CGImageRef UIGetScreenImage();
     [recognizer delaysTouchesBegan];
     [self.view addGestureRecognizer:recognizer];
     recognizer.delegate = self;
+    
+    self.panGestureRecognizer = recognizer;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -300,9 +305,9 @@ CGImageRef UIGetScreenImage();
     x = x>320?320:x;
     x = x<0?0:x;
     
-    CGRect frame = self.view.frame;
+    CGRect frame = self.fakeTopView.frame;
     frame.origin.x = x;
-    self.view.frame = frame;
+    self.fakeTopView.frame = frame;
     
     float alpha = 0.4 - (x/800);
 
@@ -331,8 +336,6 @@ CGImageRef UIGetScreenImage();
 
 }
 
-
-
 -(BOOL)isBlurryImg:(CGFloat)tmp
 {
     return YES;
@@ -343,7 +346,6 @@ CGImageRef UIGetScreenImage();
 - (void)paningGestureReceive:(UIPanGestureRecognizer *)recoginzer
 {
     if (self.screenShotsList.count <= 0) return;
-    UIViewController *currentViewController = [self.viewControllers lastObject];
     
     CGPoint touchPoint = [recoginzer locationInView:KEY_WINDOW];
     
@@ -364,6 +366,21 @@ CGImageRef UIGetScreenImage();
             [self.backgroundView addSubview:blackMask];
         }
         
+        if (self.fakeTopView == nil) {
+            UIImage *snapshotTop = [self _captureForNavigationController:self];
+            
+            CGRect frame = self.view.frame;
+            frame.origin.y += frame.size.height - snapshotTop.size.height;
+            frame.size.height = snapshotTop.size.height;
+            
+            UIImageView *fakeTopView = [[UIImageView alloc] initWithFrame:frame];
+            fakeTopView.image = snapshotTop;
+            [self.view.superview addSubview:fakeTopView];
+            [self.view.superview bringSubviewToFront:fakeTopView];
+            self.fakeTopView = fakeTopView;
+        }
+        
+        self.view.hidden = YES;
         self.backgroundView.hidden = NO;
         
         if (lastScreenShotView) [lastScreenShotView removeFromSuperview];
@@ -385,10 +402,6 @@ CGImageRef UIGetScreenImage();
                                                 lastScreenShotView.frame.size.width)];
 
         [self.backgroundView insertSubview:lastScreenShotView belowSubview:blackMask];
-        
-        currentViewController.view.userInteractionEnabled = NO;
-        currentViewController.view.layer.rasterizationScale = [[UIScreen mainScreen] scale];
-        currentViewController.view.layer.shouldRasterize = YES;
     }else if (recoginzer.state == UIGestureRecognizerStateEnded){
         
         if (touchPoint.x - startTouch.x > 80)
@@ -405,6 +418,7 @@ CGImageRef UIGetScreenImage();
                         }
                     }
                     
+                    [self.fakeTopView removeFromSuperview];
                     [self dismissModalViewControllerAnimated:NO];
                 } else if (self.viewControllers.count > 1) {
                     UIViewController *viewController = [self.viewControllers lastObject];
@@ -415,6 +429,8 @@ CGImageRef UIGetScreenImage();
                         }
                     }
                     
+                    self.view.hidden = NO;
+                    [self.fakeTopView removeFromSuperview];
                     [self popViewControllerAnimated:NO];
                 } else {
                     NSLog(@"Fatal error");
@@ -434,8 +450,8 @@ CGImageRef UIGetScreenImage();
             } completion:^(BOOL finished) {
                 _isMoving = NO;
                 self.backgroundView.hidden = YES;
-                currentViewController.view.userInteractionEnabled = YES;
-                currentViewController.view.layer.shouldRasterize = NO;
+                self.view.hidden = NO;
+                [self.fakeTopView removeFromSuperview];
             }];
             
         }
@@ -448,7 +464,8 @@ CGImageRef UIGetScreenImage();
         } completion:^(BOOL finished) {
             _isMoving = NO;
             self.backgroundView.hidden = YES;
-            currentViewController.view.layer.shouldRasterize = NO;
+            self.view.hidden = NO;
+            [self.fakeTopView removeFromSuperview];
         }];
         
         return;
