@@ -154,7 +154,12 @@
             }
         }
         
-        if ([delegate respondsToSelector:@selector(allowDragBack)]) {
+        if ([delegate respondsToSelector:@selector(allowDragBack:)]) {
+            BOOL enabled = [delegate allowDragBack:gestureRecognizer];
+            if (!enabled) {
+                return NO;
+            }
+        } else if ([delegate respondsToSelector:@selector(allowDragBack)]) {
             BOOL enabled = [delegate allowDragBack];
             if (!enabled) {
                 return NO;
@@ -171,7 +176,9 @@
         for (UIView *view = subview;view != nil; view = view.superview) {
             if ([view conformsToProtocol:@protocol(kkNavigationDelegate)]) {
                 id<kkNavigationDelegate> delegate = (id<kkNavigationDelegate>)view;
-                if ([delegate respondsToSelector:@selector(allowDragBack)]) {
+                if ([delegate respondsToSelector:@selector(allowDragBack:)]) {
+                    return [delegate allowDragBack:gestureRecognizer];
+                } else if ([delegate respondsToSelector:@selector(allowDragBack)]) {
                     return [delegate allowDragBack];
                 }
                 

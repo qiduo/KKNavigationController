@@ -28,8 +28,11 @@
 
 // 这个函数粒度最细，在kkNavigationControllerEnabled的情况下，可以根据条件暂时性的关闭滑动后退
 // 例如含有缩放功能的view，它们可以在处于放大模式下，返回NO，以禁用右划返回
+// 请使用下面的allowDragBack:函数，它可以传递右划事件的详细信息
+// 上面的allowDragBack仅仅为了兼容保留，后期可能会去掉
 // for viewController and view
-- (BOOL)allowDragBack;
+- (BOOL)allowDragBack __attribute__((deprecated));
+- (BOOL)allowDragBack:(UIGestureRecognizer *)gestureRecognizer;
 
 // 在返回前做一些清理工作
 - (void)procedureBeforeExit;
